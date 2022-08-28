@@ -5,8 +5,7 @@
   "homepage": "https://Tapio_adro.github.io/<timeloops>/",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "deploy": "sh deploy.sh"
+    "build": "vue-cli-service build"
   },
   "dependencies": {
     "vue": "^3.2.13"
