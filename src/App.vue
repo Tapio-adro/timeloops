@@ -69,6 +69,7 @@
                   &nbsp;<input
                     v-model="part.timesRepeat"
                     type="number"
+                    min="1"
                   > times
                 </span>
                 <div class="divider"></div>
@@ -80,24 +81,32 @@
                     type="number"
                     max="23"
                     @blur="checkIfTimeFits(index, 'hours')"
+                    min="0"
                     > h
                   <input
                     v-model="part.duration.minutes"
                     type="number"
                     max="59"
                     @blur="checkIfTimeFits(index, 'minutes')"
+                    min="0"
                     > m
                   <input
                     v-model="part.duration.seconds"
                     type="number"
                     max="59"
                     @blur="checkIfTimeFits(index, 'seconds')"
-                  > s
+                    min="0"
+                    > s
                 </div>
                 <div class="divider"></div>
                 <label> 
                   <input type="checkbox" v-model="part.pauseOnFinish"/>
                   Pause after finished</label>
+                <br>
+                <div class="divider"></div>
+                <label> 
+                  <input type="checkbox" v-model="part.playAlarm"/>
+                  Play alarm</label>
                 <br>
                 <div class="divider"></div>
                 Change color:
@@ -170,6 +179,12 @@
                         v-if="part.repeat"
                         class="text"
                       >{{time.parts[index].loopsToDo - time.parts[index].loopsDone}}</span>
+                    </span>
+                    <span class="icon_part">
+                      <i 
+                        class="fa fa-volume-up" aria-hidden="true"
+                        :class="{active: part.playAlarm}"
+                      ></i>
                     </span>
                   </div>
                   <div class="timeline_holder">
@@ -253,6 +268,10 @@
                     class="span_margin"
                     v-if="part.repeat"
                   >{{ part.timesRepeat }}</span>
+                  <i 
+                  class="fa fa-volume-up" aria-hidden="true"
+                  :class="{active: part.playAlarm}"
+                ></i>
                 </div>
                 <div class="time">
                   {{getTimeStringFromPart(part)}}
@@ -272,12 +291,13 @@
 <script>
 // import HelloWorld from './components/HelloWorld.vue'
 
+
 export default {
   name: 'App',
   data() {
     return {
-      editMode: false,
-      curTab: 'editor',
+      editMode: JSON.parse(localStorage.getItem('editMode')),
+      curTab: localStorage.getItem('curTab'),
       template: {
         title: 'Example loop',
         looped: true,
@@ -320,7 +340,8 @@ export default {
         duration: {hours: 0, minutes: 0, seconds: 10}, 
         repeat: false, 
         color: getRandomHexColor(), 
-        timesRepeat: 3
+        timesRepeat: 3,
+        playAlarm: false
       };
       this.template.parts.push(newPart);
     },
@@ -334,6 +355,8 @@ export default {
       let max = {'seconds': 59, 'minutes': 59, 'hours': 23}[value];
       let curValue = this.template.parts[index].duration[value];
       this.template.parts[index].duration[value] = curValue > max ? max : curValue;
+      curValue = this.template.parts[index].duration[value];
+      this.template.parts[index].duration[value] = curValue < 0 ? 0 : curValue;
     },
     compileTemplate() {
       this.time = {};
@@ -413,19 +436,24 @@ export default {
           // clear current interval
           clearInterval(this.time.interval);
           this.time.spentTimeBeforePause = 0;
+          let tPart = this.template.parts[index];
           let part = this.time.parts[index];
           part.widthPercentage = '100%';
           part.loopsDone += 1;
           // check if part repeated needed times
           if (part.loopsDone == part.loopsToDo) {
             part.loopsDone == 0;
+            // play sound signal
+            if (tPart.playAlarm) {
+              new Audio(require('./assets/sound/alarm1.mp3')).play()
+            }
             // check if it's last part
             if (part.isLastPart) {
               // if it's last part go to next loop
               clearInterval(this.time.templateIterval);
               this.compileTemplate();
               // if it pauses on finish then we do not start next loop
-              if (!this.template.parts[index].pauseOnFinish) {
+              if (!tPart.pauseOnFinish) {
                 this.toogleLoop();
               }
             } else {
@@ -434,7 +462,7 @@ export default {
               this.time.curIndex += 1;
               part.timeLeft = '-';
               // if part should stop on finish then we do not go to next interval
-              if (!this.template.parts[index].pauseOnFinish) {
+              if (!tPart.pauseOnFinish) {
                 this.nextInterval();
               } else {
                 this.time.loopIsRunning = false;
@@ -502,9 +530,11 @@ export default {
         }
       }, 200)
     },
-    saveTemplates() {
+    saveSomeData() {
       localStorage.setItem('lastTemplate', JSON.stringify(this.template));
       localStorage.setItem('templates', JSON.stringify(this.templates));
+      localStorage.setItem('curTab', this.curTab);
+      localStorage.setItem('editMode', JSON.stringify(this.editMode));
     },
     getTimeStringFromPart(part) {
       return getTimeStringFromPart(part);
@@ -514,6 +544,8 @@ export default {
     // check whether user is frist time on this web site
     if (!localStorage.getItem('firstTimeHere')) {
       localStorage.setItem('firstTimeHere', 'true');
+      localStorage.setItem('curTab', 'editor');
+      localStorage.setItem('editMode', 'false');
       this.templates = getFirstTemplates();
     }
     // otherwise load saved templates
@@ -528,7 +560,7 @@ export default {
   },
   mounted() {
     // save some data
-    window.onbeforeunload = this.saveTemplates;
+    window.onbeforeunload = this.saveSomeData;
   }
 }
 
@@ -650,15 +682,15 @@ function getFirstTemplates () {
     title: 'Pomodoro',
     looped: true,
     parts: [
-      {title: 'work', pauseOnFinish: false, duration: {hours: 0, minutes: 40, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
-      {title: 'rest', pauseOnFinish: false, duration: {hours: 0, minutes: 20, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3}
+      {title: 'work', pauseOnFinish: false, duration: {hours: 0, minutes: 40, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: false},
+      {title: 'rest', pauseOnFinish: false, duration: {hours: 0, minutes: 20, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: false}
     ]
   },
   {
     title: 'Simple countdown',
     looped: true,
     parts: [
-      {title: '', pauseOnFinish: false, duration: {hours: 0, minutes: 1, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
+      {title: '', pauseOnFinish: false, duration: {hours: 0, minutes: 1, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: false}
     ]
   }];
 }
