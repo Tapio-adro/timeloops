@@ -70,7 +70,8 @@
                     v-model="part.timesRepeat"
                     type="number"
                     min="1"
-                  > times
+                    @blur="checkIfRepeatsFits(index)"
+                    > times
                 </span>
                 <div class="divider"></div>
                 <div>
@@ -352,11 +353,25 @@ export default {
       this.templates.splice(index, 1)
     },
     checkIfTimeFits(index, value) {
-      let max = {'seconds': 59, 'minutes': 59, 'hours': 23}[value];
+      let maxTimeValues = {'seconds': 59, 'minutes': 59, 'hours': 23};
+      let timeValueType = maxTimeValues[value];
+
       let curValue = this.template.parts[index].duration[value];
-      this.template.parts[index].duration[value] = curValue > max ? max : curValue;
+      this.template.parts[index].duration[value] = curValue > timeValueType ? timeValueType : curValue;
       curValue = this.template.parts[index].duration[value];
       this.template.parts[index].duration[value] = curValue < 0 ? 0 : curValue;
+
+      let timeSum = 0;
+      for (let timeKey of Object.keys(maxTimeValues)) {
+        timeSum += this.template.parts[index].duration[timeKey];
+      }
+      if (timeSum == 0) {
+        this.template.parts[index].duration['seconds'] = 1;
+      }
+    },
+    checkIfRepeatsFits(index) {
+      let curTimeRepeats = this.template.parts[index].timesRepeat;
+      this.template.parts[index].timesRepeat = curTimeRepeats < 1 ? 1 : curTimeRepeats;
     },
     compileTemplate() {
       this.time = {};
