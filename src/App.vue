@@ -12,6 +12,7 @@
       </li>
     </ul>
   </nav>
+  
     <!-- <div id="edit_todo_toggle">
       <label class="toggle">
         <input class="toggle-checkbox" type="checkbox"
@@ -21,293 +22,277 @@
         <span class="toggle-label">Edit mode</span>
       </label>
     </div> -->
-  <div v-if="curTab == 'play'" class="template_ready">
-    <div class="header">
-      <div class="header_part">
-        <div class="title">
-          {{ template.title }}
-        </div>
-        <div 
-          class="play_button"
-          @click="toogleLoop"
-        >
-          <i v-if="time.loopIsRunning" class="fa fa-pause" aria-hidden="true"></i>
-          <i v-else class="fa fa-play" aria-hidden="true"></i>
-        </div>
-      </div>
-      <div class="timeline">
-        <div 
-          :style="{'width':time.widthPercentage}"
-          class="progress_bar"
-        ></div>
-      </div>
-    </div>
-    <div class="parts">
-      <div
-      class="part"
-      v-for="(part, index) in template.parts" :key="index"
-      :style="{'background-color':part.color}"
-      >
-        <div class="part_wrapper">
-          <div class="part_content">
-            <div class="icons">
-              <span class="icon_part part_num">
-                {{index + 1}}.
-              </span>
-              <span class="icon_part">
-                <i 
-                  class="fa fa-step-forward" aria-hidden="true"
-                  :class="{active: part.pauseOnFinish}"
-                ></i>
-              </span>
-              <span class="icon_part">
-                <i 
-                  class="fa fa-refresh" aria-hidden="true"
-                  :class="{active: part.repeat, span_margin: part.repeat}"
-                ></i>
-                <span 
-                  v-if="part.repeat"
-                  class="text"
-                >{{time.parts[index].loopsToDo - time.parts[index].loopsDone}}</span>
-              </span>
-              <span class="icon_part">
-                <i 
-                  class="fa fa-volume-up" aria-hidden="true"
-                  :class="{active: part.playAlarm}"
-                ></i>
-              </span>
-            </div>
-            <div class="timeline_holder">
-              <div class="timeline">
-                <div 
-                  :style="{'width':time.parts[index].widthPercentage}"
-                  class="progress_bar"
-                ></div>
-              </div>
-              <div 
-                class="play_button"
-                @click="handlePartClick(index)"
-              >
-                <div>
-                  <i v-if="time.curIndex == index && time.loopIsRunning" class="fa fa-pause" aria-hidden="true"></i>
-                  <i v-else class="fa fa-play" aria-hidden="true"></i>
-                </div>
-              </div>
-            </div>
-            <div class="countdown_time">
-              <div>
-                {{time.parts[index].timeLeft}}
-              </div>
-            </div>
+  <div id="page_wrapper">
+    <div v-if="curTab == 'play'" class="template_ready">
+      <div class="header">
+        <div class="header_part">
+          <div class="title">
+            {{ template.title }}
+          </div>
+          <div 
+            class="play_button"
+            @click="toogleLoop"
+          >
+            <i v-if="time.loopIsRunning" class="fa fa-pause" aria-hidden="true"></i>
+            <i v-else class="fa fa-play" aria-hidden="true"></i>
           </div>
         </div>
-        <div 
-          class="part_title"
-        >{{ part.title }}</div>
+        <div class="timeline">
+          <div 
+            :style="{'width':time.widthPercentage}"
+            class="progress_bar"
+          ></div>
+        </div>
       </div>
-    </div>
-  </div>  
-  <div v-if="curTab == 'editor'" class="template">
-    <div class="header">
-      <div>
-        <input
-          class="title"  
-          v-model="template.title"
-          type="text"
-          placeholder="template title"
-        >
-        <!-- <div class="divider"></div>
-        <label>
-          <input type="checkbox" v-model="template.looped"/>
-          Loop
-        </label>
-        <span v-if="!template.looped">
-          <br>
-          &emsp;Repeat
-          <input
-            v-model="template.repeatTimes"
-            type="number"
-          > times
-        </span> -->
-      </div>
-    </div>
-    <div class="parts">
-      <div
+      <div class="parts">
+        <div
         class="part"
         v-for="(part, index) in template.parts" :key="index"
         :style="{'background-color':part.color}"
-      >
-        <div class="part_content">
-          {{ index + 1 }}.
-          <input
-            v-model="part.title"
-            type="text"
-            placeholder="part title"
-          > 
-          <div class="divider"></div>
-          <label>
-            <input type="checkbox" v-model="part.repeat"/>
-            Repeat
-          </label>
-          <span v-if="part.repeat">
-            &nbsp;<input
-              v-model="part.timesRepeat"
-              type="number"
-              min="1"
-              @blur="checkIfRepeatsFits(index)"
-              > times
-          </span>
-          <div class="divider"></div>
-          <div>
-            Duration:
-            <br>
-            <input
-              v-model="part.duration.hours"
-              type="number"
-              max="23"
-              @blur="checkIfTimeFits(index, 'hours')"
-              min="0"
-              > h
-            <input
-              v-model="part.duration.minutes"
-              type="number"
-              max="59"
-              @blur="checkIfTimeFits(index, 'minutes')"
-              min="0"
-              > m
-            <input
-              v-model="part.duration.seconds"
-              type="number"
-              max="59"
-              @blur="checkIfTimeFits(index, 'seconds')"
-              min="0"
-              > s
-          </div>
-          <div class="divider"></div>
-          <label> 
-            <input type="checkbox" v-model="part.pauseOnFinish"/>
-            Pause after finished</label>
-          <br>
-          <div class="divider"></div>
-          <label> 
-            <input type="checkbox" v-model="part.playAlarm"/>
-            Play alarm</label>
-          <br>
-          <div class="divider"></div>
-          Change color:
-          <input 
-            type="color" 
-            v-model="part.color">
-          <i 
-            @click="removePart(index)"
-            class="fa fa-trash fa-lg remove_part" 
-            aria-hidden="true"
-          ></i>
-        </div>
-      </div>
-      <div 
-        class="part add_part_container"
-        @click="addPart"
-      >
-        <div class="add_part">
-          <i class="fa fa-plus" aria-hidden="true"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div v-if="curTab == 'templates'" id="content_templates">
-    <div id="save_button">
-      <div @click="templates.unshift(JSON.parse(JSON.stringify(template)))">
-        Save current template
-      </div>
-    </div>
-    <div
-      v-for="(tl, index) in templates" :key="index"
-    >
-      <div
-        class="template"
-      >
-        <div class="tl_index">
-          {{ index+1 }}
-        </div>
-        <div class="tl_main">
-          <div class="tl_control">
-            <div
-              class="tl_load"
-              @click="template = JSON.parse(JSON.stringify(tl)); 
-              curTab = 'editor'"
-            >Load</div>
-            <i 
-              @click="removeTemplate(index)"
-              class="fa fa-trash fa-lg" 
-              aria-hidden="true"
-            ></i>
-          </div>
-          <div class="tl_display">
-            <div
-              v-for="(part, index) in tl.parts" :key="index"
-              class="tl_part"
-              :style="{'background-color':part.color}"
-            >
-              <div class="part_content">
-                <div class="icons">
+        >
+          <div class="part_wrapper">
+            <div class="part_content">
+              <div class="icons">
+                <span class="icon_part part_num">
+                  {{index + 1}}.
+                </span>
+                <span class="icon_part">
                   <i 
                     class="fa fa-step-forward" aria-hidden="true"
                     :class="{active: part.pauseOnFinish}"
                   ></i>
+                </span>
+                <span class="icon_part">
                   <i 
                     class="fa fa-refresh" aria-hidden="true"
-                    :class="{active: part.repeat}"
+                    :class="{active: part.repeat, span_margin: part.repeat}"
                   ></i>
-                  <span
-                    class="span_margin"
+                  <span 
                     v-if="part.repeat"
-                  >{{ part.timesRepeat }}</span>
+                    class="text"
+                  >{{time.parts[index].loopsToDo - time.parts[index].loopsDone}}</span>
+                </span>
+                <span class="icon_part">
                   <i 
-                  class="fa fa-volume-up" aria-hidden="true"
-                  :class="{active: part.playAlarm}"
-                ></i>
+                    class="fa fa-volume-up" aria-hidden="true"
+                    :class="{active: part.playAlarm}"
+                  ></i>
+                </span>
+              </div>
+              <div class="timeline_holder">
+                <div class="timeline">
+                  <div 
+                    :style="{'width':time.parts[index].widthPercentage}"
+                    class="progress_bar"
+                  ></div>
                 </div>
-                <div class="time">
-                  {{getTimeStringFromPart(part)}}
+                <div 
+                  class="play_button"
+                  @click="handlePartClick(index)"
+                >
+                  <div>
+                    <i v-if="time.curIndex == index && time.loopIsRunning" class="fa fa-pause" aria-hidden="true"></i>
+                    <i v-else class="fa fa-play" aria-hidden="true"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="countdown_time">
+                <div>
+                  {{time.parts[index].timeLeft}}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="part_title"
+          >{{ part.title }}</div>
+        </div>
+      </div>
+    </div>  
+    <div v-if="curTab == 'editor'" class="template">
+      <div class="header">
+        <div>
+          <input
+            class="title"  
+            v-model="template.title"
+            type="text"
+            placeholder="template title"
+          >
+          <!-- <div class="divider"></div>
+          <label>
+            <input type="checkbox" v-model="template.looped"/>
+            Loop
+          </label>
+          <span v-if="!template.looped">
+            <br>
+            &emsp;Repeat
+            <input
+              v-model="template.repeatTimes"
+              type="number"
+            > times
+          </span> -->
+        </div>
+      </div>
+      <div class="parts">
+        <div
+          class="part"
+          v-for="(part, index) in template.parts" :key="index"
+          :style="{'background-color':part.color}"
+        >
+          <div class="part_content">
+            {{ index + 1 }}.
+            <input
+              v-model="part.title"
+              type="text"
+              placeholder="part title"
+            > 
+            <div class="divider"></div>
+            <label>
+              <input type="checkbox" v-model="part.repeat"/>
+              Repeat
+            </label>
+            <span v-if="part.repeat">
+              &nbsp;<input
+                v-model="part.timesRepeat"
+                type="number"
+                min="1"
+                @blur="checkIfRepeatsFits(index)"
+                > times
+            </span>
+            <div class="divider"></div>
+            <div>
+              Duration:
+              <br>
+              <input
+                v-model="part.duration.hours"
+                type="number"
+                max="23"
+                @blur="checkIfTimeFits(index, 'hours')"
+                min="0"
+                > h
+              <input
+                v-model="part.duration.minutes"
+                type="number"
+                max="59"
+                @blur="checkIfTimeFits(index, 'minutes')"
+                min="0"
+                > m
+              <input
+                v-model="part.duration.seconds"
+                type="number"
+                max="59"
+                @blur="checkIfTimeFits(index, 'seconds')"
+                min="0"
+                > s
+            </div>
+            <div class="divider"></div>
+            <label> 
+              <input type="checkbox" v-model="part.pauseOnFinish"/>
+              Pause after finished</label>
+            <br>
+            <div class="divider"></div>
+            <label> 
+              <input type="checkbox" v-model="part.playAlarm"/>
+              Play alarm</label>
+            <br>
+            <div class="divider"></div>
+            Change color:
+            <input 
+              type="color" 
+              v-model="part.color">
+            <i 
+              @click="removePart(index)"
+              class="fa fa-trash fa-lg remove_part" 
+              aria-hidden="true"
+            ></i>
+          </div>
+        </div>
+        <div 
+          class="part add_part_container"
+          @click="addPart"
+        >
+          <div class="add_part">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="curTab == 'templates'" id="content_templates">
+      <div id="save_button">
+        <div @click="templates.unshift(JSON.parse(JSON.stringify(template)))">
+          Save current template
+        </div>
+      </div>
+      <div
+        v-for="(tl, index) in templates" :key="index"
+      >
+        <div
+          class="template"
+        >
+          <div class="tl_index">
+            {{ index+1 }}
+          </div>
+          <div class="tl_main">
+            <div class="tl_control">
+              <div
+                class="tl_load"
+                @click="template = JSON.parse(JSON.stringify(tl)); 
+                curTab = 'editor'"
+              >Load</div>
+              <i 
+                @click="removeTemplate(index)"
+                class="fa fa-trash fa-lg" 
+                aria-hidden="true"
+              ></i>
+            </div>
+            <div class="tl_display">
+              <div
+                v-for="(part, index) in tl.parts" :key="index"
+                class="tl_part"
+                :style="{'background-color':part.color}"
+              >
+                <div class="part_content">
+                  <div class="icons">
+                    <i 
+                      class="fa fa-step-forward" aria-hidden="true"
+                      :class="{active: part.pauseOnFinish}"
+                    ></i>
+                    <i 
+                      class="fa fa-refresh" aria-hidden="true"
+                      :class="{active: part.repeat}"
+                    ></i>
+                    <i 
+                    class="fa fa-volume-up" aria-hidden="true"
+                    :class="{active: part.playAlarm}"
+                  ></i>
+                  </div>
+                  <div class="time">
+                    {{getTimeStringFromPart(part)}}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="template_title">
-        <div>{{ tl.title }}</div>
+        <div class="template_title">
+          <div>{{ tl.title }}</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
-
 
 export default {
   name: 'App',
-  data() {
-    return {
-      editMode: JSON.parse(localStorage.getItem('editMode')),
-      curTab: localStorage.getItem('curTab'),
-      template: {
-        title: 'Example loop',
-        looped: true,
-        parts: [
-          {title: 'simple part', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
-          {title: 'repeats', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 3}, repeat: true, color: getRandomHexColor(), timesRepeat: 3},
-          {title: 'pauses on finish', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
-          {title: 'last part', pauseOnFinish: false, duration: {hours: 0, minutes: 1, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3}
-        ],
-      },
-      time: {},
-      tabs: ['templates', 'editor', 'play'],
-      templates: []
-    }
-  },
+  data() { return {
+    curTab: localStorage.getItem('curTab'),
+    template: JSON.parse(localStorage.getItem('lastTemplate')),
+    time: {},
+    tabs: ['templates', 'editor', 'play'],
+    templates: JSON.parse(localStorage.getItem('templates'))
+  } },
   watch: {
     editMode() {
       if (this.editMode) {
@@ -543,28 +528,22 @@ export default {
       localStorage.setItem('lastTemplate', JSON.stringify(this.template));
       localStorage.setItem('templates', JSON.stringify(this.templates));
       localStorage.setItem('curTab', this.curTab);
-      localStorage.setItem('editMode', JSON.stringify(this.editMode));
+      // localStorage.setItem('editMode', JSON.stringify(this.editMode));
     },
     getTimeStringFromPart(part) {
       return getTimeStringFromPart(part);
     }
   },
-  beforeMount() {
-    // check whether user is frist time on this web site
+  beforeCreate() {
+    // check whether user is first time on this web site
     if (!localStorage.getItem('firstTimeHere')) {
       localStorage.setItem('firstTimeHere', 'true');
-      localStorage.setItem('curTab', 'editor');
-      localStorage.setItem('editMode', 'false');
-      this.templates = getFirstTemplates();
+      localStorage.setItem('curTab', 'play');
+      localStorage.setItem('lastTemplate', JSON.stringify(getExampleTemplate()));
+      localStorage.setItem('templates', JSON.stringify(getFirstTemplates()));
     }
-    // otherwise load saved templates
-    else if (localStorage.getItem('templates')) {
-      this.templates = JSON.parse(localStorage.getItem('templates'))
-    }
-    // load last used template
-    if (localStorage.getItem('lastTemplate')) {
-      this.template = JSON.parse(localStorage.getItem('lastTemplate'))
-    }
+  },
+  beforeMount() {
     this.compileTemplate();
   },
   mounted() {
@@ -702,6 +681,19 @@ function getFirstTemplates () {
       {title: '', pauseOnFinish: false, duration: {hours: 0, minutes: 1, seconds: 0}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: false}
     ]
   }];
+}
+function getExampleTemplate () {
+  return {
+    title: 'Example loop',
+    looped: true,
+    parts: [
+      {title: 'simple part', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
+      {title: 'repeats', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 3}, repeat: true, color: getRandomHexColor(), timesRepeat: 3},
+      {title: 'has alarm', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: 'true'},
+      {title: 'pauses on finish', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
+      {title: 'last part', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 20}, repeat: false, color: getRandomHexColor(), timesRepeat: 3}
+    ],
+  };
 }
 </script>
 
