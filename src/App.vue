@@ -294,21 +294,14 @@ export default {
     templates: JSON.parse(localStorage.getItem('templates'))
   } },
   watch: {
-    editMode() {
-      if (this.editMode) {
+    curTab() {
+      console.log('check');
+      if (this.curTab == 'play') {
+        this.compileTemplate();
+        console.log('compile');
+      } else {
         clearInterval(this.time.interval);
         clearInterval(this.time.templateIterval);
-      } else {
-        this.compileTemplate();
-      }
-    },
-    curTab() {
-      if (this.curTab != 'editor' && !this.editMode) {
-        clearInterval(this.time.interval);
-        clearInterval(this.time.templateIterval); 
-      } else if (this.curTab == 'editor'
-        && !this.editMode) {
-        this.compileTemplate();
       }
     }
   },
