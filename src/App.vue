@@ -237,7 +237,7 @@
               <div
                 class="tl_load"
                 @click="template = JSON.parse(JSON.stringify(tl)); 
-                curTab = 'editor'"
+                curTab = 'play'"
               >Load</div>
               <i 
                 @click="removeTemplate(index)"
@@ -682,7 +682,7 @@ function getExampleTemplate () {
     parts: [
       {title: 'simple part', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
       {title: 'repeats', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 3}, repeat: true, color: getRandomHexColor(), timesRepeat: 3},
-      {title: 'has alarm', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: 'true'},
+      {title: 'has alarm', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3, playAlarm: true},
       {title: 'pauses on finish', pauseOnFinish: true, duration: {hours: 0, minutes: 0, seconds: 5}, repeat: false, color: getRandomHexColor(), timesRepeat: 3},
       {title: 'last part', pauseOnFinish: false, duration: {hours: 0, minutes: 0, seconds: 20}, repeat: false, color: getRandomHexColor(), timesRepeat: 3}
     ],
